@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Toko Saya</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/1157/1157005.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+        body{background:linear-gradient(135deg,#ff9800 0%,#e65100 100%);min-height:100vh;padding:20px}
+        .container{max-width:420px;margin:0 auto}
+        .header{text-align:center;color:#fff;margin-bottom:25px}
+        .header h1{font-size:22px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .card{background:#fff;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+        .card h2{font-size:17px;color:#e65100;margin-bottom:15px;display:flex;align-items:center;gap:6px}
+        .input-group{margin-bottom:12px}
+        .input-group label{display:block;font-size:13px;color:#555;margin-bottom:6px;font-weight:500}
+        .input-group input, .input-group select{width:100%;padding:12px 14px;border:2px solid #ffcc80;border-radius:10px;font-size:15px}
+        .input-group input:focus, .input-group select:focus{outline:none;border-color:#e65100}
+        .foto-preview{width:100%;height:140px;border:2px dashed #ffcc80;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:10px;overflow:hidden;background:#fffaf5}
+        .foto-preview img{max-width:100%;max-height:100%;object-fit:contain;display:none}
+        .foto-preview span{color:#e65100;font-size:14px;text-align:center;padding:10px}
+        .foto-preview.dengan-foto span{display:none}
+        .foto-preview.dengan-foto img{display:block}
+        .btn-primary{width:100%;background:linear-gradient(135deg,#4CAF50 0%,#2e7d32 100%);color:#fff;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+        .btn-ubah{background:#2196F3;color:#fff;border:none;padding:7px 12px;border-radius:5px;font-size:13px;cursor:pointer;margin-right:6px}
+        .btn-hapus{background:#f44336;color:#fff;border:none;padding:7px 12px;border-radius:5px;font-size:13px;cursor:pointer}
+        .daftar-judul{font-size:16px;font-weight:bold;color:#fff;margin:25px 0 12px 0;display:flex;align-items:center;gap:6px}
+        .kategori-nama{color:#fff;font-size:15px;font-weight:bold;margin:15px 0 8px 0;padding-bottom:4px;border-bottom:2px solid rgba(255,255,255,0.3);display:flex;justify-content:space-between;align-items:center}
+        .kategori-kosong{font-size:13px;opacity:0.7;font-weight:normal}
+        .item-barang{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+        .item-kiri{display:flex;align-items:center;gap:12px;flex:1;min-width:200px}
+        .item-foto{width:50px;height:50px;border-radius:8px;overflow:hidden;background:#f5f5f5;flex-shrink:0}
+        .item-foto img{width:100%;height:100%;object-fit:cover}
+        .item-info strong{font-size:15px;color:#222;display:block}
+        .item-info span{font-size:13px;color:#e65100}
+        .item-aksi{display:flex;margin-top:8px;width:100%;justify-content:flex-end}
+        .kosong{text-align:center;padding:30px;color:#fff;opacity:0.8;font-size:14px}
+        .status{padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:15px;display:none}
+        .status.sukses{background:#d4edda;color:#155724;display:block}
+        .status.error{background:#f8d7da;color:#721c24;display:block}
+        .tombol-batal{background:#e0e0e0;color:#333;border:none;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin-left:8px;display:none}
+        .mode-edit-info{background:#e3f2fd;padding:8px 12px;border-radius:6px;margin-bottom:12px;color:#0d47a1;font-size:13px;display:none}
+        .modal-latar{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+        .modal-kotak{background:#fff;border-radius:16px;padding:25px 20px;max-width:320px;width:90%;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+        .modal-kotak h3{font-size:17px;color:#333;margin-bottom:10px}
+        .modal-kotak p{font-size:14px;color:#666;margin-bottom:20px;line-height:1.5}
+        .modal-tombol{display:flex;gap:10px;justify-content:center}
+        .modal-tidak{background:#e0e0e0;color:#333;border:none;padding:10px 25px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer}
+        .modal-ya{background:#f44336;color:#fff;border:none;padding:10px 25px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer}
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><span class="material-icons">storefront</span> Admin Toko Saya</h1>
+        <p>Tambah · Ubah Harga · Hapus — Langsung Terupdate</p>
+    </div>
+
+    <div class="card">
+        <h2 id="judulForm"><span class="material-icons" style="font-size:20px">add_circle</span> Tambah Barang Baru</h2>
+        <div id="infoEdit" class="mode-edit-info">Mode Edit — Ubah lalu simpan</div>
+        <div id="pesanStatus" class="status"></div>
+
+        <div class="input-group">
+            <label>Kategori / Jenis</label>
+            <select id="kategori">
+                <option value="Makanan">Makanan</option>
+               <option  value="Snack">Snack</option>
+                <option value="Minuman">Minuman</option>
+                <option value="Sembako">Sembako</option>
+               <option value="Bumbu">Bumbu</option>
+                <option 
+                value="Pulsa">Pulsa</option>
+               <option 
+                value="Pulsa">Alat bangunan</option>
+                <option 
+                value="Lainnya">Lainnya</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Nama Barang</label>
+            <input type="text" id="nama" placeholder="Contoh: Beras Premium">
+        </div>
+
+        <div class="input-group">
+            <label>Harga (Rp)</label>
+            <input type="number" id="harga" placeholder="Contoh: 50000">
+        </div>
+
+        <div class="input-group">
+            <label>Foto Barang — Klik untuk pilih dari Galeri</label>
+            <div class="foto-preview" id="areaFoto" onclick="document.getElementById('inputFile').click()">
+                <span><span class="material-icons" style="font-size:30px;display:block;margin-bottom:5px">add_photo_alternate</span>Klik di sini<br>Pilih foto dari galeri HP</span>
+                <img id="pratinjauFoto" src="" alt="Pratinjau">
+            </div>
+            <input type="file" id="inputFile" accept="image/*" style="display:none" onchange="pilihFoto(this)">
+        </div>
+
+        <div style="display:flex;margin-top:5px">
+            <button class="btn-primary" id="tombolSimpan" onclick="simpanBarang()">
+                <span class="material-icons">save</span> Simpan Barang
+            </button>
+            <button class="tombol-batal" id="tombolBatal" onclick="batalEdit()">Batal</button>
+        </div>
+    </div>
+
+    <h3 class="daftar-judul"><span class="material-icons">list_alt</span> Daftar Barang</h3>
+    <div id="daftarBarang"><p class="kosong">Memuat data...</p></div>
+</div>
+
+<div id="modalKonfirmasi" class="modal-latar" onclick="if(event.target === this) tutupModalHapus()">
+    <div class="modal-kotak">
+        <h3>Hapus Barang?</h3>
+        <p id="teksKonfirmasiHapus">Yakin mau menghapus barang ini?<br>Tindakan ini tidak bisa dibatalkan!</p>
+        <div class="modal-tombol">
+            <button class="modal-tidak" onclick="tutupModalHapus()">Tidak</button>
+            <button class="modal-ya" onclick="konfirmasiHapus()">Ya, Hapus!</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAczYyv2od87SrJPAR8oTVW-xDR7QPU614",
+  authDomain: "admin-toko-ce1f2.firebaseapp.com",
+  databaseURL: "https://admin-toko-ce1f2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "admin-toko-ce1f2",
+  storageBucket: "admin-toko-ce1f2.firebasestorage.app",
+  messagingSenderId: "168491546734",
+  appId: "1:168491546734:web:a10f59a01ef18ca0754e7f"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const barangRef = db.ref('barang');
+
+let editId = null;
+let fotoBase64 = '';
+let idYangAkanDihapus = null;
+let dataCache = {}; // Tambah penyimpanan sementara
+
+const ikonDefault = {
+    'Makanan':'https://cdn-icons-png.flaticon.com/128/2972/2972627.png',
+    'Minuman':'https://cdn-icons-png.flaticon.com/128/2738/2738950.png',
+    'Sembako':'https://cdn-icons-png.flaticon.com/128/877/877950.png',
+    'Lainnya':'https://cdn-icons-png.flaticon.com/128/1157/1157005.png'
+};
+
+const daftarKategori = [
+    {id:'Makanan', nama:'Makanan'},
+    {id:'Minuman', nama:'Minuman'},
+    {id:'Snack', nama:'Snack'},
+    {id:'Sembako', nama:'Sembako'},
+    {id:'Bumbu', nama:'Bumbu'},
+    {id:'Pulsa', nama:'Pulsa'},
+    {id:'Alat bangunan', nama:'Alat bangunan'},
+    {id:'Lainnya', nama:'Lainnya'}
+];
+
+function pilihFoto(input){
+    if(input.files && input.files[0]){
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e){
+            fotoBase64 = e.target.result;
+            document.getElementById('pratinjauFoto').src = fotoBase64;
+            document.getElementById('areaFoto').classList.add('dengan-foto');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function statusPesan(teks, jenis){
+    const el = document.getElementById('pesanStatus');
+    el.textContent = teks;
+    el.className = 'status ' + jenis;
+    el.style.display = 'block';
+    setTimeout(()=>el.style.display='none',3000);
+}
+
+async function simpanBarang(){
+    const nama = document.getElementById('nama').value.trim();
+    const harga = parseInt(document.getElementById('harga').value);
+    const kategori = document.getElementById('kategori').value;
+
+    if(!nama){ statusPesan('Masukkan nama barang!','error'); return; }
+    if(!harga || harga<=0){ statusPesan('Masukkan harga yang benar!','error'); return; }
+    if(!fotoBase64 && !editId){ statusPesan('Pilih foto barang dulu!','error'); return; }
+
+    const data = {
+        nama: nama,
+        harga: harga,
+        kategori: kategori,
+        waktuDiubah: new Date().toISOString()
+    };
+    
+    // Foto hanya disimpan kalau ada yang baru atau belum ada
+    if(fotoBase64) data.foto = fotoBase64;
+
+    try {
+        if(editId){
+            await barangRef.child(editId).update(data);
+            statusPesan('✅ Barang diperbarui!','sukses');
+            batalEdit();
+        } else {
+            data.foto = fotoBase64; // Foto baru hanya saat tambah
+            await barangRef.push(data);
+            statusPesan('✅ Barang ditambahkan!','sukses');
+            document.getElementById('nama').value = '';
+            document.getElementById('harga').value = '';
+            fotoBase64 = '';
+            document.getElementById('pratinjauFoto').src = '';
+            document.getElementById('areaFoto').classList.remove('dengan-foto');
+        }
+    } catch(err) {
+        statusPesan('❌ Error: ' + err.message,'error');
+    }
+}
+
+function editBarang(id, data){
+    editId = id;
+    fotoBase64 = '';
+    document.getElementById('judulForm').innerHTML = '<span class="material-icons">edit</span> Ubah Data Barang';
+    document.getElementById('infoEdit').style.display = 'block';
+    document.getElementById('tombolBatal').style.display = 'inline-block';
+    document.getElementById('kategori').value = data.kategori;
+    document.getElementById('nama').value = data.nama;
+    document.getElementById('harga').value = data.harga;
+    
+    if(data.foto && data.foto.startsWith('data:image')){
+        fotoBase64 = data.foto;
+        document.getElementById('pratinjauFoto').src = fotoBase64;
+        document.getElementById('areaFoto').classList.add('dengan-foto');
+    }
+    
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function batalEdit(){
+    editId = null;
+    fotoBase64 = '';
+    document.getElementById('judulForm').innerHTML = '<span class="material-icons">add_circle</span> Tambah Barang Baru';
+    document.getElementById('infoEdit').style.display = 'none';
+    document.getElementById('tombolBatal').style.display = 'none';
+    document.getElementById('nama').value = '';
+    document.getElementById('harga').value = '';
+    document.getElementById('pratinjauFoto').src = '';
+    document.getElementById('areaFoto').classList.remove('dengan-foto');
+}
+
+function bukaKonfirmasiHapus(id, nama){
+    idYangAkanDihapus = id;
+    document.getElementById('teksKonfirmasiHapus').innerHTML = 'Yakin mau hapus<br><strong>"' + nama + '"</strong>?<br>Tindakan ini tidak bisa dibatalkan!';
+    document.getElementById('modalKonfirmasi').style.display = 'flex';
+}
+
+function tutupModalHapus(){
+    document.getElementById('modalKonfirmasi').style.display = 'none';
+    idYangAkanDihapus = null;
+}
+
+function konfirmasiHapus(){
+    if(idYangAkanDihapus){
+        barangRef.child(idYangAkanDihapus).remove();
+        statusPesan('✅ Barang berhasil dihapus','sukses');
+    }
+    tutupModalHapus();
+}
+
+// === FUNGSI RENDER DAFTAR YANG DIPERBAIKI ===
+function tampilkanDaftar(data){
+    const wadah = document.getElementById('daftarBarang');
+    wadah.innerHTML = ''; // Bersihkan dulu
+    
+    daftarKategori.forEach(kat => {
+        const barangKat = [];
+        for(const id in data){
+            if(data[id].kategori === kat.id){
+                barangKat.push({id, ...data[id]});
+            }
+        }
+        
+        wadah.innerHTML += '<h4 class="kategori-nama">' + kat.nama + 
+            (barangKat.length === 0 ? '<span class="kategori-kosong">Belum ada barang</span>' : '') +
+            '</h4>';
+        
+        if(barangKat.length > 0){
+            barangKat.forEach(b => {
+                const fotoSrc = b.foto && b.foto.startsWith('data:image') ? b.foto : ikonDefault[b.kategori];
+                wadah.innerHTML += `
+                <div class="item-barang">
+                    <div class="item-kiri">
+                        <div class="item-foto">
+                            <img src="${fotoSrc}" alt="${b.nama}" loading="lazy">
+                        </div>
+                        <div class="item-info">
+                            <strong>${b.nama}</strong>
+                            <span>Rp ${b.harga.toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                    <div class="item-aksi">
+                        <button class="btn-ubah" onclick='editBarang("${b.id}", ${JSON.stringify(b).replace(/'/g,"\\'")})'>Ubah</button>
+                        <button class="btn-hapus" onclick="bukaKonfirmasiHapus('${b.id}','${b.nama}')">Hapus</button>
+                    </div>
+                </div>`;
+            });
+        }
+    });
+}
+
+// Hanya ambil data sekali, lalu tampilkan
+barangRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
+    tampilkanDaftar(data);
+});
+</script>
+</body>
+</html>
